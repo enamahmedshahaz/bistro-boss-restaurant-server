@@ -30,9 +30,25 @@ async function run() {
 
     // Get the database and collection on which to run the operation
     const database = client.db("BistroBossDB");
+    const userCollection = database.collection("users");
     const menuCollection = database.collection("menu");
     const reviewCollection = database.collection("reviews");
     const cartCollection = database.collection("carts");
+
+
+    // API to insert users data
+    app.post('/users', async (req, res) => {
+      const user = req.body;
+
+      const query = { email: user.email };
+      const existingUser = await userCollection.findOne(query);
+      if (existingUser) {
+        return res.send({ message: 'user already exists', insertedId: null });
+      }
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
+
 
     //API to get all menu items
     app.get('/menu', async (req, res) => {
