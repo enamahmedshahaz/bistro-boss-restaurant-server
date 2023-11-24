@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-
+const jwt = require('jsonwebtoken');
 const cors = require('cors');
 require('dotenv').config();
 
@@ -36,6 +36,35 @@ async function run() {
     const cartCollection = database.collection("carts");
 
 
+    //jwt related api
+    app.post('/jwt', async (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+      res.send({ token });
+    });
+
+
+    //middlewares
+    const verifyToken = (req, res, next) => {
+      console.log('Inside verify token: ', req.headers.authorization);
+      //no authorization header
+      if (!req.headers.authorization) {
+        return res.status(401).send({ message: 'forbidden access' })
+      }
+      // has authorization header, extract token from header and verify it 
+      const token = req.headers.authorization.split(' ')[1];
+
+      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        // token is not valid
+        if (err) {
+          return res.status(401).send({ message: 'forbidden access' })
+        }
+        //token is valid 
+        req.decoded = decoded;
+        next();
+      })
+    }
+
     // API to insert users data
     app.post('/users', async (req, res) => {
       const user = req.body;
@@ -50,7 +79,7 @@ async function run() {
     });
 
     // API to get all users
-    app.get('/users', async (req, res) => {
+    app.get('/users', verifyToken, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
