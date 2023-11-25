@@ -156,6 +156,13 @@ async function run() {
       res.send(result);
     });
 
+     // API to delete a menu based on id
+     app.delete('/menu/:id', verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await menuCollection.deleteOne(query);
+      res.send(result);
+    });
 
     //API to get all reviews
     app.get('/reviews', async (req, res) => {
