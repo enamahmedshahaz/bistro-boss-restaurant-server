@@ -103,7 +103,30 @@ async function run() {
       };
       const result = await userCollection.updateOne(filter, updateDoc);
       res.send(result);
-    })
+    });
+
+    /*
+      To check if a user is admin: 
+      You must be a logged in valid user (passes verifyToken Middleware )
+      You can check only your email if it is admin, you can not check others email 
+      If all the above requirement is fulfilled you have to check the document contains your  email has the role admin.
+    */
+    app.get('/users/admin/:email', verifyToken, async (req, res) => {
+      const email = req.params.email;
+
+      if (email !== req.decoded.email) {
+        return res.status(403).send({ message: 'unauthorized access' })
+      }
+
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+
+      let admin = false;
+      if (user) {
+        admin = user?.role === 'admin';
+      }
+      res.send({ admin });
+    });
 
 
 
