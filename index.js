@@ -147,7 +147,15 @@ async function run() {
       const cursor = menuCollection.find();
       const result = await cursor.toArray();
       res.send(result);
-    })
+    });
+
+     //API to save a menu item
+    app.post('/menu', verifyToken, verifyAdmin, async (req, res) => {
+      const item = req.body;
+      const result = await menuCollection.insertOne(item);
+      res.send(result);
+    });
+
 
     //API to get all reviews
     app.get('/reviews', async (req, res) => {
