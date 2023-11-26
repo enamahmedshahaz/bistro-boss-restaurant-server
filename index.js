@@ -140,15 +140,13 @@ async function run() {
       res.send({ admin });
     });
 
-
-
     //API to get all menu items
     app.get('/menu', async (req, res) => {
       const cursor = menuCollection.find();
       const result = await cursor.toArray();
       res.send(result);
     });
-    
+
     //API to get a menu item based on id
     app.get('/menu/:id', async (req, res) => {
       const id = req.params.id;
@@ -156,10 +154,6 @@ async function run() {
       const result = await menuCollection.findOne(query);
       res.send(result);
     });
-
-
-
-
 
     //API to save a menu item
     app.post('/menu', verifyToken, verifyAdmin, async (req, res) => {
@@ -173,6 +167,26 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await menuCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // API to update a menu based on id
+    app.patch('/menu/:id', verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const menu = req.body;
+
+      const filter = { _id: new ObjectId(id) };
+
+      const updateDoc = {
+        $set: {
+          name: menu.name,
+          image: menu.image,
+          price: menu.price,
+          recipe: menu.recipe,
+          category: menu.category
+        },
+      };
+      const result = await menuCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
 
